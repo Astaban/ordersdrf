@@ -18,7 +18,7 @@ class LoginUser(LoginView):
     template_name = 'user/login.html'
 
     def get_success_url(self):
-        return reverse_lazy('courses_list')
+        return reverse_lazy('main')
 
 
 class ProfileUser(LoginRequiredMixin, UpdateView):

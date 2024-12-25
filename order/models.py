@@ -89,7 +89,7 @@ class OrderItem(models.Model):
 
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name='Товар')
-    quantity = models.DecimalField(max_digits=3, decimal_places=1, verbose_name='Количество')
+    quantity = models.FloatField(verbose_name='Количество')
 
     def __str__(self):
         return f'{self.product.name} x {self.quantity}'

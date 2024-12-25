@@ -1,11 +1,12 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.forms import modelformset_factory
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import ListView, TemplateView, CreateView
 from rest_framework.generics import ListAPIView
 
-from order.forms import AddOrderForm
-from order.models import Product, Order
+from order.forms import AddOrderForm, OrderItemForm
+from order.models import Product, Order, OrderItem, Shop
 from order.serializers import ProductSerializer
 
 
@@ -16,14 +17,15 @@ class MainPage(TemplateView):
 class AddOrder(LoginRequiredMixin, CreateView):
 
     model = Order
-    form_class = AddOrderForm
     template_name = 'ordertemplates/add_order.html'
     success_url = reverse_lazy('main')
+    shops = Shop.objects.all()
+    products = [obj.name for obj in Product.objects.all()]
+    form = AddOrderForm(shops, products)
 
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs['user'] = self.request.user
-        return kwargs
+    extra_context = {'form': form}
+    def form_valid(self, form):
+        order = form.save(commit=False)
 
 
 class ProductsList(LoginRequiredMixin, ListView):
