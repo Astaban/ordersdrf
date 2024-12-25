@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.db import models
 from user.models import User
 
@@ -38,7 +39,7 @@ class Shop(models.Model):
     short_name = models.CharField(max_length=8, verbose_name='Краткое наименование')
     full_name = models.CharField(max_length=100, verbose_name='Полное наименование')
     address = models.CharField(max_length=250, null=True, blank=True, verbose_name='Адрес')
-    vendors = models.ManyToManyField(User, related_name='shops', verbose_name='Продавцы')
+    vendors = models.ManyToManyField(get_user_model(), related_name='shops', verbose_name='Продавцы')
     routing = models.ForeignKey('Routing', on_delete=models.CASCADE, null=True, blank=True, related_name='shops', verbose_name='Маршрут')
     routing_priority = models.PositiveIntegerField(blank=True, null=True, verbose_name='Порядок')
 
