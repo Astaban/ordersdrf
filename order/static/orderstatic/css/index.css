@@ -1,0 +1,49 @@
+.top_menu {
+    width: 100vw;
+    height: 60px;
+    background-color: darkblue;
+    padding: 10px 50px 10px 0px;
+    color: white;
+}
+
+.right_side {
+    float: right;
+    padding-right: 35px;
+    font-size: 35px;
+    font-color: white;
+    text-decoration: none; /* Убирает подчеркивание у ссылки */
+
+}
+
+a {
+    color: white;
+    text-decoration: none;
+}
+
+.right_side a:hover {
+    text-decoration: underline;
+}
+
+.content {
+    margin-top: 150px;
+}
+
+.order-button {
+    height: 150px;
+    width: 350px;
+    font-size: 35px;
+    text-align: center; /* Центрирует текст по горизонтали */
+    line-height: 45px; /* Центрирует текст по вертикали */
+    text-decoration: none; /* Убирает подчеркивание у ссылки */
+    background-color: darkblue; /* Цвет фона */
+    color: white; /* Цвет шрифта при наведении */
+    border-radius: 5%; /* Делает кнопку круглой */
+    padding: 15px 15px 15px 15px;
+    align: center;
+    text-decoration: none; /* Убирает подчеркивание у ссылки */
+}
+
+.order-button:hover {
+    background-color: blue; /* Цвет фона при наведении */
+    color: white; /* Цвет шрифта при наведении */
+}

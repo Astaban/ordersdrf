@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{title}}</title>
+</head>
+Авторизация
+<body>
+<form action="" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}" />
+    <div class="form-errors">{{form.non_field_errors}}</div>
+    {% for field in form %}
+    <p>
+        <label class="form-label" for="{{field.id_for_label}}">{{field.label}}</label>
+        {{field}}
+    </p>
+    <div class="form-errors">{{field.errors}}</div>
+    {% endfor %}
+    <div>
+        <button type="submit">Войти</button>
+        <button type="reset">Очистить</button>
+    </div>
+    <div>
+        <a href="{% url 'users:password_reset' %}">Восстановление пароля</a>
+    </div>
+</form>
+<hr>
+<a href="{% url 'social:begin' 'github' %}">Войти с помощью Github</a>
+</body>
+</html>

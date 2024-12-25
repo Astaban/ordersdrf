@@ -1,0 +1,29 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link type="text/css" href="{% static 'orderstatic/css/index.css' %}" rel="stylesheet"/>
+</head>
+<body>
+<div class="top_menu">
+<!--  <div class="left_side" style="display: inline">-->
+<!--  </div>-->
+  <div class="right_side" style="display: inline">
+      {% if user.is_authenticated %}
+        <span>
+            <a href="{% url 'user:profile' %}">{{user.username}}</a> | <a href="{% url 'user:logout' %}">Выйти</a>
+        </span>
+      {% else %}
+        <span>
+            <a href="{% url 'user:login' %}">Войти</a> | <a href="{% url 'user:registration' %}">Регистрация</a>
+        </span>
+      {% endif %}
+  </div>
+</div>
+<div class="content" style="inline">
+    {% block content %}
+    {% endblock %}
+</div>
+</body>
+</html>

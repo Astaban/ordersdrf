@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}: {{user.first_name}}</title>
+</head>
+<body>
+<h1>Профиль пользователя:</h1>
+<form action="" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}" />
+    <div class="form-errors">{{form.non_field_errors}}</div>
+    {% for field in form %}
+    <p>
+        <label class="form-label" for="{{field.id_for_label}}">{{field.label}}</label>
+        {{field}}
+    </p>
+    <div class="form-errors">{{field.errors}}</div>
+    {% endfor %}
+    <div>
+        <button type="submit">Сохранить</button>
+        <button type="reset">Очистить</button>
+    </div>
+</form>
+</body>
+</html>
