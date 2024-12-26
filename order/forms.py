@@ -5,13 +5,10 @@ from order.models import Order, Shop, OrderItem, Product
 
 class AddOrderForm(forms.Form):
     def __init__(self, shops, products, *args, **kwargs):
-        self.shops = forms.ModelChoiceField(queryset=shops)
+        super().__init__(*args, **kwargs)
+        self.fields['shops'] = forms.ModelChoiceField(queryset=shops, label='Магазин:', empty_label='Не выбрано.')
         for product in products:
-            setattr(self, product, forms.FloatField(label='Quantity', min_value=0.5))
-        super().__init__(self, *args, **kwargs)
-
-    class Meta:
-        fields = '__all__'
+            self.fields[product] = forms.FloatField(label=product, min_value=0.5, required=False)
 
 
 class OrderItemForm(forms.ModelForm):
