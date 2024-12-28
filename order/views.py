@@ -1,12 +1,12 @@
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.forms import modelformset_factory
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import ListView, TemplateView, CreateView
 from rest_framework.generics import ListAPIView
 
-from order.forms import AddOrderForm, OrderItemForm
+from order.forms import AddOrderForm
 from order.models import Product, Order, OrderItem, Shop
 from order.serializers import ProductSerializer
 
@@ -15,12 +15,15 @@ class MainPage(TemplateView):
     template_name = 'ordertemplates/main.html'
 
 
+@login_required
 def add_order(request):
 
     shops = request.user.shops.all()
-    products = [product.name for product in Product.objects.all()]
-    # print(shops)
-    # print(products)
+    products_queryset = Product.objects.all()
+    products = [product.name for product in products_queryset]
+    print(shops)
+    print(products)
+    print(products_queryset)
 
     if request.method == 'POST':
         print('POST')
@@ -31,14 +34,13 @@ def add_order(request):
             order.save()
             for product, quantity in form.cleaned_data.items():
                 if quantity:
-                    product_obj = Product.objects.get(name=product)
+                    product_obj = products_queryset.get(name=product)
                     order_item = OrderItem(order=order, product=product_obj, quantity=quantity)
                     order_item.save()
             return HttpResponse(f'Заказ {order} сформирован.\n{order.show_order()}')
         else:
             return HttpResponse('Что-то пошло не так.')
     else:
-        print('GET')
         form = AddOrderForm(shops=shops, products=products)
         return render(request, 'ordertemplates/add_order.html', {'form': form})
 

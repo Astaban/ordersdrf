@@ -73,7 +73,7 @@ class Order(models.Model):
     order_date = models.DateField(auto_now_add=True, verbose_name='Дата заказа')
 
     def __str__(self):
-        return f'{self.shop.full_name} на {self.order_date}.'
+        return f'{self.shop.full_name} от {self.order_date}.'
 
     def show_order(self):
         order = self.items.all()

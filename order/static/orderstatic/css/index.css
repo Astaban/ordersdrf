@@ -48,27 +48,3 @@ a {
     color: white; /* Цвет шрифта при наведении */
 }
 
-.fieldWrapper {
-    display: flex; /* Используем flexbox для размещения элементов в строку */
-    align-items: center; /* Выравниваем элементы по центру по вертикали */
-    margin: 1vh 0; /* Отступ сверху и снизу в vh */
-}
-
-.fieldWrapper label {
-    margin-right: 15%; /* Отступ справа от лейбла в процентах */
-    font-size: 5vw; /* Размер шрифта для лейбла в vw */
-}
-
-.fieldWrapper input[type="number"] {
-    width: 20%; /* Ширина поля ввода в процентах */
-    padding: 1vh; /* Внутренние отступы для удобства ввода в vh */
-    font-size: 2vw; /* Размер шрифта для поля ввода в vw */
-    border: 1px solid #ccc; /* Цвет и стиль границы */
-    border-radius: 4px; /* Закругление углов */
-    transition: border-color 0.3s; /* Плавный переход для изменения цвета границы */
-}
-
-.fieldWrapper input[type="number"]:focus {
-    border-color: #66afe9; /* Цвет границы при фокусе */
-    outline: none; /* Убираем стандартный контур при фокусе */
-}

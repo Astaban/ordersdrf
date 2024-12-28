@@ -5,11 +5,123 @@
     {% csrf_token %}
     {% for field in form %}
         <div class="fieldWrapper">
-            {{ field.errors }}
-            {{ field.label_tag }} {{ field }}
+
+            {% if forloop.first %}
+                {{ field.errors }}
+                {{ field.label_tag }}
+                {{ field }} <br>
+            {% else %}
+                {{ field.errors }}
+                {{ field.label_tag }}
+                <div class="input-group">
+                    <button type="button" class="btn-decrement" onclick="decrementValue('{{ field.id_for_label }}')">-</button>
+                    {{ field }}
+                    <button type="button" class="btn-increment" onclick="incrementValue('{{ field.id_for_label }}')">+</button>
+                </div>
+            {% endif %}
         </div>
     {% endfor %}
-    <button type="submit">Submit Order</button>
+    <div class="button-group">
+        <input type="submit" value="Отправить" class="form-button">
+        <input type="reset" value="Очистить" class="form-button">
+    </div>
 </form>
+
+<script>
+    function incrementValue(fieldId) {
+        var inputField = document.getElementById(fieldId);
+        var currentValue = parseFloat(inputField.value) || 0; // Получаем текущее значение или 0
+        inputField.value = (currentValue + 1).toFixed(1); // Увеличиваем значение на 1 и округляем до 1 знака после запятой
+    }
+
+function decrementValue(fieldId) {
+        var inputField = document.getElementById(fieldId);
+        var currentValue = parseFloat(inputField.value) || 0; // Получаем текущее значение или 0
+        if (currentValue > 0) { // Проверяем, что значение больше 0
+            inputField.value = (currentValue - 1).toFixed(1); // Уменьшаем значение на 1 и округляем до 1 знака после запятой
+        }
+    }</script>
+<style>
+    .fieldWrapper {
+        display: flex;
+        justify-content: space-between; /* Размещаем элементы по краям */
+        align-items: center; /* Центрируем элементы по вертикали */
+        margin-bottom: 1vh; /* Отступ между полями */
+        font-size: 3vh;
+    }
+
+    label {
+        flex: 1; /* Занимаем доступное пространство для метки */
+        text-align: left; /* Выравнивание по левому краю */
+        margin-right: 2vw; /* Отступ между меткой и полем ввода */
+    }
+
+    .input-group {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end; /* Выравнивание по правому краю */
+        flex: 1; /* Занимаем оставшееся пространство */
+    }
+
+    .btn-increment, .btn-decrement {
+        width: 7vw; /* Ширина кнопок */
+        height: 3vh; /* Высота кнопок, равная высоте поля ввода */
+        background-color: #4CAF50; /* Зеленый фон */
+        color: white; /* Белый текст */
+        border: none;
+        cursor: pointer;
+        font-size: 3vw; /* Размер текста на кнопках */
+        margin-left: 1vw; /* Отступ между кнопками */
+        margin-right: 1vw; /* Отступ между кнопками */
+        border-radius: 0.5vw; /* Закругленные углы кнопок */
+    }
+
+    .btn-increment:hover, .btn-decrement:hover {
+        background-color: #45a049; /* Более темный зеленый при наведении */
+    }
+
+    #id_shops {
+        width: 25vw; /* Ширина поля ввода */
+        height: 3vh; /* Высота поля ввода */
+        text-align: left; /* Центрируем текст внутри поля */
+        font-size: 2vw; /* Размер текста в поле ввода */
+        border: 1px solid #ccc; /* Граница поля ввода */
+        border-radius: 0.5vw; /* Закругленные углы поля ввода */
+        padding-left: 2vw;
+    }
+
+
+    input[type="number"] {
+        width: 5vw; /* Ширина поля ввода */
+        height: 3vh; /* Высота поля ввода */
+        text-align: center; /* Центрируем текст внутри поля */
+        font-size: 2vw; /* Размер текста в поле ввода */
+        border: 1px solid #ccc; /* Граница поля ввода */
+        border-radius: 0.5vw; /* Закругленные углы поля ввода */
+    }
+
+    .button-group {
+        display: flex;
+        justify-content: center; /* Центрируем кнопки по горизонтали */
+        margin-top: 10vw; /* Отступ сверху между полями и кнопками */
+    }
+
+    .form-button {
+        width: 20vw; /* Ширина кнопок */
+        height: 5vh; /* Высота кнопок */
+        background-color: #007BFF; /* Синий фон */
+        color: white; /* Белый текст */
+        border: none;
+        border-radius: 0.5vw; /* Закругленные углы */
+        font-size: 3vw; /* Размер текста на кнопках */
+        margin: 0 2vw; /* Отступ между кнопками */
+        cursor: pointer; /* Указатель на кнопках */
+    }
+
+    .form-button:hover {
+        background-color: #0056b3; /* Более темный синий при наведении */
+    }
+
+</style>
 
 {% endblock %}
