@@ -21,9 +21,12 @@ def add_order(request):
     shops = request.user.shops.all()
     products_queryset = Product.objects.all()
     products = [product.name for product in products_queryset]
+
+    print(f'{add_order.__name__} data setup start')
     print(shops)
     print(products)
     print(products_queryset)
+    print(f'{add_order.__name__} data setup finish')
 
     if request.method == 'POST':
         print('POST')

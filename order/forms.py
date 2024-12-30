@@ -8,7 +8,7 @@ class AddOrderForm(forms.Form):
         super().__init__(*args, **kwargs)
         self.fields['shops'] = forms.ModelChoiceField(queryset=shops, label='Магазин:', empty_label='Не выбрано.')
         for product in products:
-            self.fields[product] = forms.FloatField(label=product, min_value=0.5, required=False)
+            self.fields[product] = forms.FloatField(label=product, min_value=0, required=False)
 
 
 class OrderItemForm(forms.ModelForm):

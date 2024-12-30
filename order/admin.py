@@ -7,6 +7,10 @@ from order import models
 from django.utils import timezone
 from time import time
 
+import pandas as pd
+
+from order.models import Shop
+
 admin.site.site_header = "Панель Администратора"
 admin.site.index_title = "Заказы. Магазины. Товары"
 
@@ -62,21 +66,52 @@ class OrderAdmin(admin.ModelAdmin):
     list_filter = ('order_date', )
 
     @staticmethod
-    def generate_invoice(orders):
-        invoice = {}
-        if isinstance(orders, models.Order):
-            items = orders.items.all()
-            for item in items:
-                invoice.update({item.product.name: item.quantity})
-            return invoice
-        else:
-            for order in orders:
-                for item in order.items.all():
-                    if item.product.name in invoice.keys():
-                        invoice[item.product.name] += item.quantity
-                    else:
-                        invoice[item.product.name] = item.quantity
-            return invoice
+    def process_orders_to_products_list(orders):
+        """Создает сортированный список уникальных названий всех товаров, содержащихся в
+        queryset orders; для ограничения нагрузки на БД желательно использовать select_related('product')
+        при формировании queryset orders до его передачи методу"""
+        product_names = set()
+        for order in orders:
+            order_products_names = {item.product.name for item in order.items.all().select_related('product')}
+            product_names = product_names.union(order_products_names)
+        product_names = sorted(product_names)
+        return product_names
+
+    @staticmethod
+    def process_order_to_dict(order, product_names):
+        """Создает словарь для дальнейшего использования в создании датафрейма;
+        product_names - список строковых значений - названий товаров (обязательно сортирован);
+        order - объект Order;
+        возвращает словарь, ключ которого - краткое название магазина,
+        значения - список, элементы которого - количество товаров, входящих в product_names,
+        которые заказаны в заказе order (если их нет в заказе - добавляется значение 0)"""
+        column_values = []
+        order_dict = {order.shop.short_name: column_values}
+        order_items = order.items.all()
+        for product in product_names:
+            if order_items.filter(product__name=product).exists():
+                order_item = order.items.get(product__name=product)
+                column_values.append(order_item.quantity)
+            else:
+                column_values.append(0)
+        # print(product_names)
+        # print(order_dict)
+        return order_dict
+
+    def process_orders_to_dataframe(self, orders, product_names):
+        """Создает датафрейм для представления накладной, маршрута, общей накладной;
+        product_names - список строковых значений - названий товаров (обязательно сортирован);
+        orders - queryset объектов Order;
+        возвращает pandas dataframe, в котором строки - наименования товаров, столбцы - наименования магазинов,
+        ячейки - количество конкретного товара, заказанного на конкретный магазин"""
+        tb_data = {}
+        for order in orders:
+            tb_data.update(self.process_order_to_dict(order, product_names))
+
+        data_frame = pd.DataFrame(tb_data, index=list(product_names))
+        data_frame['Итого:'] = data_frame.sum(axis=1)
+        return data_frame
+
 
     @admin.action(description='Все заказали?')
     def check_orders(self, request, queryset):
@@ -87,37 +122,40 @@ class OrderAdmin(admin.ModelAdmin):
     @admin.action(description='Формировать заказ')
     @duration_time_measurer
     def finalize_order(self, request, queryset):
-        invoices = []
+
+        #------------------формируем и наполняем используемые структуры данных
+        dataframes_set = {}
         today = timezone.now().date()
-        today_orders = models.Order.objects.filter(order_date=today)
+        today_orders = models.Order.objects.filter(order_date=today).select_related('shop')
         routings = models.Routing.objects.all()
 
-        print('data created')
 
-        full_invoice = {'name': 'Общий заказ:'}
-        full_invoice.update(self.generate_invoice(today_orders))
-        invoices.append(full_invoice)
+        #------------------формируем общий заказ на все точки
+        orders = today_orders
+        product_names = self.process_orders_to_products_list(orders)
+        data_frame = self.process_orders_to_dataframe(orders, product_names)
+        dataframes_set.update({'Общий заказ': data_frame})
 
-        print('full_invoice created')
-
+        #------------------формируем заказы на маршруты
         for routing in routings:
-            routing_invoice = {'name': f'{routing.name}:'}
-            shops = routing.shops.all()
-            orders = today_orders.filter(shop__in=shops)
-            routing_invoice.update(self.generate_invoice(orders))
-            invoices.append(routing_invoice)
+            orders = today_orders.filter(shop__routing=routing)
+            product_names = self.process_orders_to_products_list(orders)
+            data_frame = self.process_orders_to_dataframe(orders, product_names)
+            dataframes_set.update({f'{routing.name}': data_frame})
 
-        print('routings_invoices created')
+        #------------------формируем заказы на магазины
+        for shop in Shop.objects.all():
+            orders = today_orders.filter(shop=shop)
+            product_names = self.process_orders_to_products_list(orders)
+            data_frame = self.process_orders_to_dataframe(orders, product_names)
+            dataframes_set.update({f'{shop.name}': data_frame})
 
-        for order in today_orders:
-            shop_invoice = {'name': f'{order.shop}:'}
-            shop_invoice.update(self.generate_invoice(order))
-            invoices.append(shop_invoice)
+        for k, v in dataframes_set.items():
+            print(k)
+            print(v)
+            print('*'*25)
 
-        print('shops_invoices created')
-
-        [print(invoice) for invoice in invoices]
-        return render(request, 'ordertemplates/invoice_table.html', {'invoice_data': invoices})
+        # return render(request, 'ordertemplates/invoice_table.html', {'invoice_data': invoices})
 
     def show_order(self, obj):
         return obj.show_order()
