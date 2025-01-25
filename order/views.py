@@ -5,7 +5,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import ListView, TemplateView, CreateView
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListAPIView, ListCreateAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -76,49 +76,55 @@ class ProductsList(LoginRequiredMixin, ListView):
         return products
 
 
+class ProductsListAPI(ListCreateAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+
+# Как все сложно без специализированных классов представлений
+
 # class ProductsListAPI(LoginRequiredMixin, ListAPIView):
 #     queryset = Product.objects.all()
 #     serializer_class = ProductSerializer
 
 
-class ProductsListAPI(APIView):
-
-    def get(self, request):
-        products = Product.objects.all()
-        return Response({'products': ProductSerializer(products, many=True).data})
-
-    def post(self, request):
-        serializer = ProductSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response({'product': serializer.data})
-
-    def put(self, request, *args, **kwargs):
-        pk = kwargs.get('pk', None)
-        if not pk:
-            return Response({"error": "Method PUT not allowed"})
-
-        try:
-            instance = Product.objects.get(pk=pk)
-        except:
-            return Response({"error": "Such product does not exists"})
-
-        serializer = ProductSerializer(data=request.data, instance=instance)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response({"changes": serializer.data})
-
-    def delete(self, request, *args, **kwargs):
-        pk = kwargs.get('pk', None)
-        if not pk:
-            return Response({"error": "Method DELETE not allowed"})
-
-        try:
-            instance = Product.objects.get(pk=pk)
-        except:
-            return Response({"error": "Such product does not exists"})
-
-        instance.delete()
+# class ProductsListAPI(APIView):
+#
+#     def get(self, request):
+#         products = Product.objects.all()
+#         return Response({'products': ProductSerializer(products, many=True).data})
+#
+#     def post(self, request):
+#         serializer = ProductSerializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+#         serializer.save()
+#         return Response({'product': serializer.data})
+#
+#     def put(self, request, *args, **kwargs):
+#         pk = kwargs.get('pk', None)
+#         if not pk:
+#             return Response({"error": "Method PUT not allowed"})
+#
+#         try:
+#             instance = Product.objects.get(pk=pk)
+#         except:
+#             return Response({"error": "Such product does not exists"})
+#
+#         serializer = ProductSerializer(data=request.data, instance=instance)
+#         serializer.is_valid(raise_exception=True)
+#         serializer.save()
+#         return Response({"changes": serializer.data})
+#
+#     def delete(self, request, *args, **kwargs):
+#         pk = kwargs.get('pk', None)
+#         if not pk:
+#             return Response({"error": "Method DELETE not allowed"})
+#
+#         try:
+#             instance = Product.objects.get(pk=pk)
+#         except:
+#             return Response({"error": "Such product does not exists"})
+#
+#         instance.delete()
 
     # def post(self, request):
     #     new_product = Product.objects.create(

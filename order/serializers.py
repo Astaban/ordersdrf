@@ -13,16 +13,22 @@ class ProductSerializer(serializers.ModelSerializer):
         model = Product
         fields = ('id', 'name', 'category', 'description', 'unit')
 
-    def create(self, validated_data):
-        return Product.objects.create(**validated_data)
 
-    def update(self, instance, validated_data):
-        instance.name = validated_data.get('name', instance.name)
-        instance.category = validated_data.get('category', instance.category)
-        instance.description = validated_data.get('description', instance.description)
-        instance.unit = validated_data.get('unit', instance.unit)
-        instance.save()
-        return instance
+    # Методы create и update рассматривались в учебных целях при наследовании от базового сериализатора Serializer,
+    # для сериализатора связанного с моделью их переопределять не нужно, работают базовые
+
+    # def create(self, validated_data):
+    #     return Product.objects.create(**validated_data)
+    #
+    # def update(self, instance, validated_data):
+    #     instance.name = validated_data.get('name', instance.name)
+    #     instance.category = validated_data.get('category', instance.category)
+    #     instance.description = validated_data.get('description', instance.description)
+    #     instance.unit = validated_data.get('unit', instance.unit)
+    #     instance.save()
+    #     return instance
+
+
 
 
 # #######################Non-usable cod, just tests during education
