@@ -1,56 +1,63 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invoice Data</title>
+    <title>Заказы</title>
     <style>
         body {
+            font-family: Arial, sans-serif;
             margin: 20px;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px; /* Отступ между таблицами при печати */
+            margin-bottom: 30px; /* Отступ между таблицами */
+            page-break-after: always;
         }
         th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
+            border: 1px solid #dddddd;
             text-align: left;
+            padding: 8px;
         }
         th {
             background-color: #f2f2f2;
         }
-        @media print {
-            /* Стили для печати */
-            body {
-                -webkit-print-color-adjust: exact; /* Для Chrome */
-            }
-            table {
-                page-break-after: always; /* Каждая таблица на новом листе */
-            }
+        .print-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <h1>Invoice Data</h1>
-    {% for invoice in invoice_data %}
-        <h2>{{ invoice.name }}</h2> <!-- Заголовок таблицы -->
+    <h1>Накладные заказов</h1>
+
+    {% for title, dataframe in dataframe_set.items %}
+        <h2>{{ title }}</h2>
         <table>
-            <tr>
-                <th>Товар</th>
-                <th>Количество</th>
-            </tr>
-            {% for key, value in invoice.items %}
-                {% if key != "name" %} <!-- Пропустить ключ name -->
+            <thead>
+                <tr>
+                    <th>Наименование товара</th>  <!-- Заголовок для индексов -->
+                    {% for column in dataframe.columns %}
+                        <th>{{ column }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for index, row in dataframe.iterrows %}
                     <tr>
-                        <td>{{ key }}</td>
-                        <td>{{ value }}</td>
+                        <td>{{ index }}</td>  <!-- Отображение индекса -->
+                        {% for cell in row %}
+                            <td>{{ cell }}</td>
+                        {% endfor %}
                     </tr>
-                {% endif %}
-            {% endfor %}
+                {% endfor %}
+            </tbody>
         </table>
     {% endfor %}
-    <button onclick="window.print()">Print</button>
+
+    <button class="print-btn" onclick="window.print()">Напечатать накладные</button>
 </body>
 </html>

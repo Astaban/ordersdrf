@@ -98,7 +98,7 @@ class OrderAdmin(admin.ModelAdmin):
         # print(order_dict)
         return order_dict
 
-    def process_orders_to_dataframe(self, orders, product_names):
+    def process_orders_to_dataframe(self, orders, product_names, total=True):
         """Создает датафрейм для представления накладной, маршрута, общей накладной;
         product_names - список строковых значений - названий товаров (обязательно сортирован);
         orders - queryset объектов Order;
@@ -109,7 +109,8 @@ class OrderAdmin(admin.ModelAdmin):
             tb_data.update(self.process_order_to_dict(order, product_names))
 
         data_frame = pd.DataFrame(tb_data, index=list(product_names))
-        data_frame['Итого:'] = data_frame.sum(axis=1)
+        if total:
+            data_frame['Итого:'] = data_frame.sum(axis=1)
         return data_frame
 
 
@@ -124,7 +125,7 @@ class OrderAdmin(admin.ModelAdmin):
     def finalize_order(self, request, queryset):
 
         #------------------формируем и наполняем используемые структуры данных
-        dataframes_set = {}
+        dataframe_set = {}
         today = timezone.now().date()
         today_orders = models.Order.objects.filter(order_date=today).select_related('shop')
         routings = models.Routing.objects.all()
@@ -134,28 +135,28 @@ class OrderAdmin(admin.ModelAdmin):
         orders = today_orders
         product_names = self.process_orders_to_products_list(orders)
         data_frame = self.process_orders_to_dataframe(orders, product_names)
-        dataframes_set.update({'Общий заказ': data_frame})
+        dataframe_set.update({'Общий заказ': data_frame[[data_frame.columns[-1]]]})
 
         #------------------формируем заказы на маршруты
         for routing in routings:
             orders = today_orders.filter(shop__routing=routing)
             product_names = self.process_orders_to_products_list(orders)
             data_frame = self.process_orders_to_dataframe(orders, product_names)
-            dataframes_set.update({f'{routing.name}': data_frame})
+            dataframe_set.update({f'{routing.name}': data_frame})
 
         #------------------формируем заказы на магазины
         for shop in Shop.objects.all():
             orders = today_orders.filter(shop=shop)
             product_names = self.process_orders_to_products_list(orders)
-            data_frame = self.process_orders_to_dataframe(orders, product_names)
-            dataframes_set.update({f'{shop.name}': data_frame})
+            data_frame = self.process_orders_to_dataframe(orders, product_names, total=False)
+            dataframe_set.update({f'{shop.full_name}': data_frame})
 
-        for k, v in dataframes_set.items():
+        for k, v in dataframe_set.items():
             print(k)
             print(v)
             print('*'*25)
 
-        # return render(request, 'ordertemplates/invoice_table.html', {'invoice_data': invoices})
+        return render(request, 'ordertemplates/invoice_table.html', {'dataframe_set': dataframe_set})
 
     def show_order(self, obj):
         return obj.show_order()
