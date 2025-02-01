@@ -127,3 +127,28 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'user.User'
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+
+    'DEFAULT_PERMISSION_CLASSES': [
+        # 'rest_framework.permissions.IsAuthenticated',  # Только аутентифицированные пользователи
+        'order.permissions.IsAdminOrReadOnly',
+        # 'rest_framework.permissions.AllowAny',    # Все пользователи (включая неаутентифицированных)
+        # 'rest_framework.permissions.IsAdminUser',  # Только администраторы
+    ],
+
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',  # По умолчанию рендеринг в JSON
+        'rest_framework.renderers.BrowsableAPIRenderer',  # Веб-интерфейс для API
+    ],
+
+    # Укажите настройки пагинации
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,  # Количество объектов на одной странице
+}
+

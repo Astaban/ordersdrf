@@ -5,9 +5,13 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import ListView, TemplateView, CreateView
-from rest_framework.generics import ListAPIView, ListCreateAPIView
+from rest_framework.decorators import action
+from rest_framework.generics import ListAPIView, ListCreateAPIView, UpdateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.viewsets import ModelViewSet
 
 from order.forms import AddOrderForm
 from order.models import Product, Order, OrderItem, Shop
@@ -51,19 +55,19 @@ def add_order(request):
         return render(request, 'ordertemplates/add_order.html', {'form': form})
 
 
-class AddOrder(LoginRequiredMixin, CreateView):
-
-    model = Order
-    template_name = 'ordertemplates/add_order.html'
-    success_url = reverse_lazy('main')
-    shops = Shop.objects.all()
-    products = [obj.name for obj in Product.objects.all()]
-    form = AddOrderForm(shops, products)
-
-    extra_context = {'form': form}
-
-    def form_valid(self, form):
-        order = form.save(commit=False)
+# class AddOrder(LoginRequiredMixin, CreateView):
+#     """На данный момент не актуально"""
+#     model = Order
+#     template_name = 'ordertemplates/add_order.html'
+#     success_url = reverse_lazy('main')
+#     shops = Shop.objects.all()
+#     products = [obj.name for obj in Product.objects.all()]
+#     form = AddOrderForm(shops, products)
+#
+#     extra_context = {'form': form}
+#
+#     def form_valid(self, form):
+#         order = form.save(commit=False)
 
 
 class ProductsList(LoginRequiredMixin, ListView):
@@ -76,9 +80,43 @@ class ProductsList(LoginRequiredMixin, ListView):
         return products
 
 
-class ProductsListAPI(ListCreateAPIView):
-    queryset = Product.objects.all()
+class ProductViewSetPagination(PageNumberPagination):
+    page_size = 5
+    page_query_param = 'page'
+    page_size_query_param = 'page_size'
+    max_page_size = 10_000
+
+
+class ProductViewSet(ModelViewSet):
+    """Весь CRUD теперь доступен через данный вьюсет. queryset заменен на get_queryset, что дает возможность
+    настраивать выборку."""
+    # queryset = Product.objects.all()
     serializer_class = ProductSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly, )
+    pagination_class = ProductViewSetPagination
+
+    def get_queryset(self):
+        pk = self.kwargs.get('pk', None)
+        if not pk:
+            return Product.objects.all()
+        return Product.objects.filter(pk=pk)
+
+
+# специализированные представления были заменены вьюсетом
+
+# class ProductsListAPI(ListCreateAPIView):
+#     queryset = Product.objects.all()
+#     serializer_class = ProductSerializer
+#
+#
+# class ProductsUpdateAPI(UpdateAPIView):
+#     queryset = Product.objects.all()
+#     serializer_class = ProductSerializer
+#
+#
+# class ProductsDetailAPI(RetrieveUpdateDestroyAPIView):
+#     queryset = Product.objects.all()
+#     serializer_class = ProductSerializer
 
 # Как все сложно без специализированных классов представлений
 
